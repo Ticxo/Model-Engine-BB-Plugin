@@ -116,10 +116,14 @@ function getIfParentIsInvalid(cube) {
 
             if(minZ>childCube.from[2]) minZ = childCube.from[2]
             if(maxZ<childCube.to[2])   maxZ = childCube.to[2]
+
+            //console.log(Math.abs(maxX - minX))
         
-            if( (Math.abs(minX)+Math.abs(maxX)) > 112 ) errorList.push('X exceeds 112 in size')
-            if( (Math.abs(minY)+Math.abs(maxY)) > 112 ) errorList.push('Y exceeds 112 in size')
-            if( (Math.abs(minZ)+Math.abs(maxZ)) > 112 ) errorList.push('Z exceeds 112 in size')
+            if( Math.abs(maxX - minX) > 112 ) errorList.push('X exceeds 112 in size')
+            if( Math.abs(maxY - minY) > 112 ) errorList.push('Y exceeds 112 in size')
+            if( Math.abs(maxZ - minZ) > 112 ) errorList.push('Z exceeds 112 in size')
+
+            if(errorList.lenght>0) return errorList.join(', ')
         
         }
     }
