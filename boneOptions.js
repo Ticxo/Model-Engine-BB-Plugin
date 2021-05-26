@@ -78,9 +78,6 @@ function setBoneTypeMenu(){
 			}
 		},
 		onConfirm: function(formData) {
-			// Do something when confirm
-			// func(formData.isHead, formData.isHand, ...)
-			var op = modelEngineOptions[Group.selected.uuid];
 			if(op) {
 				op.is_head = formData.isHead;
 				op.is_mount = formData.isMount;
