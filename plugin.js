@@ -11,7 +11,8 @@
 			Codecs.project.on('parse', parseCallback);
 			Blockbench.showQuickMessage("MEG Loaded!", 2000);
 			generateBoneOption()
-			seeErrorsMenu()
+			generateErrorListAction();
+			// seeErrorsMenu()
 		},
 
 		onunload() {this.onuninstall();}, onuninstall() {
