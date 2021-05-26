@@ -20,30 +20,164 @@ var parseCallback = (e) => {
             Codecs.project.on('compile', compileCallback);
             Codecs.project.on('parse', parseCallback);
             Blockbench.showQuickMessage("MEG Loaded!", 2000);
-
-            editAction = new Action('meg_bone_options', {
-                name: 'Bone Options',
-				icon: 'icon-format_java',
-				category: 'edit',
-				//keybind: new Keybind({key: 113}), // Do we want to have a keybind?
-				click: function () {
-					setBoneTypeMenu().show();
-				}
-			})
-			Group.prototype.menu.structure.push('_');
-            Group.prototype.menu.addAction(editAction)
+            generateBoneOption()
+            //seeErrorsMenu()
 		},
 
-		onunload() {
-			this.onuninstall();
-			Codecs.project.events.compile.remove(compileCallback);
-		},
-		onuninstall() {
-            // Prevent action flood when reloading the plugin, remove once pushed to the public
+		onunload() {this.onuninstall();}, onuninstall() {
+            Codecs.project.events.compile.remove(compileCallback);
 			editAction.delete();
 		}
 	})
 })();
+
+function seeErrorsMenu() {
+
+    // These variables and functions need better names
+    
+    var templateHTML = '';
+    var alreadyShownParents = [];
+
+    Outliner.elements.forEach(currentCube => {
+
+        var errors = getInvalidValuesFromCube(currentCube)
+        if(errors) {
+            templateHTML += '<span>'+currentCube.name+': '+errors+'</span>'
+            templateHTML += '<button @click="clickCube('+'\''+currentCube.uuid+'\''+')"style="width: 10%; float: right;">See cube</button>'
+            templateHTML += '<hr>'
+        }
+
+        var invalidParent = getIfParentIsInvalid(currentCube)
+        if(invalidParent && !alreadyShownParents.includes(currentCube.parent.uuid)) {
+            alreadyShownParents.push(currentCube.parent.uuid)
+            templateHTML += '<span>'+currentCube.parent.name+': '+invalidParent+'</span>'
+            templateHTML += '<button @click="clickBone('+'\''+currentCube.parent.uuid+'\''+')"style="width: 10%; float: right;">See bone</button>'
+            templateHTML += '<hr>'
+        }
+    })
+    var result = templateHTML ? templateHTML : '<h2>No errors found :D</h2>'
+
+    codeViewDialog = new Dialog({
+        title: 'Errors',
+        id: 'errors_menu',
+        resizable: true,
+        width: 650,
+        component: {
+            components: {VuePrismEditor},
+            data: {
+                text: 'Fancy stuff'
+            },
+            methods: {
+                clickCube(uuid) {
+                    var cube = getCubeByUUID(uuid)
+                    if(cube!=null) {
+                        cube.selectLow()
+                        TickUpdates.selection = true;
+                    }
+                    codeViewDialog.hide()
+                },
+                clickBone(uuid) {
+                    var bone = getBoneByUUID(uuid)
+                    if(bone!=null) {
+                        bone.selectLow()
+                        TickUpdates.selection = true;
+                    }
+                    codeViewDialog.hide()
+                }
+            },
+            template: `<div>`+ result +`</div>`
+        }
+    }).show();
+}
+
+function getIfParentIsInvalid(cube) {
+    var childrens = cube.parent.children
+    var errorList = []
+    var minX, maxX, minY, maxY, minZ, maxZ
+
+    for(cube in childrens) {
+        if(childrens.hasOwnProperty(cube)) {
+            var childCube = childrens[cube]
+
+            // Set the variables as ints if they don't exist
+            if(!minX) minX = childCube.from[0]
+            if(!maxX) maxX = childCube.to[0]
+            if(!minY) minY = childCube.from[1]
+            if(!maxY) maxY = childCube.to[1]
+            if(!minZ) minZ = childCube.from[2]
+            if(!maxZ) maxZ = childCube.to[2]
+
+
+            if(minX>childCube.from[0]) minX = childCube.from[0]
+            if(maxX<childCube.to[0])   maxX = childCube.to[0]
+
+            if(minY>childCube.from[1]) minY = childCube.from[1]
+            if(maxY<childCube.to[1])   maxY = childCube.to[1]
+
+            if(minZ>childCube.from[2]) minZ = childCube.from[2]
+            if(maxZ<childCube.to[2])   maxZ = childCube.to[2]
+        
+            if( (Math.abs(minX)+Math.abs(maxX)) > 112 ) errorList.push('X exceeds 112 in size')
+            if( (Math.abs(minY)+Math.abs(maxY)) > 112 ) errorList.push('Y exceeds 112 in size')
+            if( (Math.abs(minZ)+Math.abs(maxZ)) > 112 ) errorList.push('Z exceeds 112 in size')
+        
+        }
+    }
+    return errorList.join(', ')
+}
+
+function getInvalidValuesFromCube(cube) {
+
+    var errorList = []
+
+    var x = cube.rotation[0]
+    var y = cube.rotation[1]
+    var z = cube.rotation[2]
+
+    if(x!=-45 && x!=-22.5 && x!=0 && x!=22.5 && x!=45) errorList.push('X rotation bad')
+    if(y!=-45 && y!=-22.5 && y!=0 && y!=22.5 && y!=45) errorList.push('Y rotation bad')
+    if(z!=-45 && z!=-22.5 && z!=0 && z!=22.5 && z!=45) errorList.push('Z rotation bad')
+
+    if(cube.to[0]-cube.from[0]>112) errorList.push('X size must be lower')
+    if(cube.to[1]-cube.from[1]>112) errorList.push('Y size must be lower')
+    if(cube.to[2]-cube.from[2]>112) errorList.push('Z size must be lower')
+
+    return errorList.join(', ')
+}
+
+function getCubeByUUID(uuid) {
+    var result;
+    Outliner.elements.forEach(currentCube => {
+        if(uuid==currentCube.uuid) {
+            result = currentCube;
+        }
+    })
+    return result;
+} 
+
+function getBoneByUUID(uuid) {
+    var result;
+    Outliner.elements.forEach(currentCube => {
+        if(currentCube.parent && uuid==currentCube.parent.uuid) {
+            result = currentCube.parent;
+        }
+    })
+    return result;
+} 
+
+function generateBoneOption() {
+    editAction = new Action('meg_bone_options', {
+        name: 'Bone Options',
+        icon: 'icon-format_java',
+        category: 'edit',
+        //keybind: new Keybind({key: 113}), // Do we want to have a keybind?
+        click: function () {
+            setBoneTypeMenu().show();
+        }
+    })
+    Group.prototype.menu.structure.push('_');
+    Group.prototype.menu.addAction(editAction)
+}
 
 function setBoneTypeMenu(){
 
