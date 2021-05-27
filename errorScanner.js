@@ -12,13 +12,13 @@ function generateErrorListAction() {
 		category: 'edit',
 		keybind: new Keybind({key: 'y'}), 
 		click: function () {
-			seeErrorsMenu();
+			displayErrorList();
 		}
 	})
 }
 
 
-function seeErrorsMenu() {
+function displayErrorList() {
 
 	var templateHTML = '';
 

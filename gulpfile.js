@@ -9,6 +9,7 @@ exports.default = defaultTask
 
 gulp.task('concat', function() {
   return gulp.src([
+    'globalVariables.js',
     'errorScanner.js',
     'boneOptions.js',
     'plugin.js'
