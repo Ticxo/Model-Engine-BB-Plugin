@@ -8,7 +8,7 @@ function saySomething() {
 
 (function() {
 
-	var button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Click me!</button></div>`)
+	var button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Error</button></div>`)
 	var modeSelectCallback = (e)=> {
 		if(e.mode.id == 'edit')
 			$('#left_bar').append(button)
@@ -33,6 +33,7 @@ function saySomething() {
 			// Menus
 			generateBoneOption()
 			generateErrorListAction();
+			generateVariantSelectorAction();
 
 			if(Mode.selected.id == 'edit')
 				$('#left_bar').append(button)

@@ -40,6 +40,11 @@ function setBoneTypeMenu(){
 			return op.hand;
 		return 'none';
 	}
+	function getDuplicate() {
+		if(op)
+			return op.duplicate;
+		return '';
+	}
 	function getExtra() {
 		if(op)
 			return op.extra;
@@ -70,6 +75,12 @@ function setBoneTypeMenu(){
 				},
 				value: getHand()
 			},
+			isDuplicate: {
+				label: 'Duplicate',
+				type: 'input',
+				placeholder: 'not duplicate',
+				value: getDuplicate()
+			},
 			extraOptions: {
 				label: 'Extra',
 				type: 'textarea',
@@ -82,12 +93,14 @@ function setBoneTypeMenu(){
 				op.is_head = formData.isHead;
 				op.is_mount = formData.isMount;
 				op.hand = formData.isHand;
+				op.duplicate = formData.isDuplicate;
 				op.extra = formData.extraOptions;
 			}else {
 				modelEngineOptions[Group.selected.uuid] = {
 					is_head: formData.isHead,
 					is_mount: formData.isMount,
 					hand: formData.isHand,
+					duplicate: formData.isDuplicate,
 					extra: formData.extraOptions
 				};
 			}

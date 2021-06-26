@@ -90,7 +90,7 @@ function displayErrorList() {
 					codeViewDialog.hide()
 				}
 			},
-			template: `<div>`+ result +`</div>`
+			template: `<div>${result}</div>`
 		}
 	}).show();
 }
@@ -205,6 +205,11 @@ function setBoneTypeMenu(){
 			return op.hand;
 		return 'none';
 	}
+	function getDuplicate() {
+		if(op)
+			return op.duplicate;
+		return '';
+	}
 	function getExtra() {
 		if(op)
 			return op.extra;
@@ -235,6 +240,12 @@ function setBoneTypeMenu(){
 				},
 				value: getHand()
 			},
+			isDuplicate: {
+				label: 'Duplicate',
+				type: 'input',
+				placeholder: 'not duplicate',
+				value: getDuplicate()
+			},
 			extraOptions: {
 				label: 'Extra',
 				type: 'textarea',
@@ -247,12 +258,14 @@ function setBoneTypeMenu(){
 				op.is_head = formData.isHead;
 				op.is_mount = formData.isMount;
 				op.hand = formData.isHand;
+				op.duplicate = formData.isDuplicate;
 				op.extra = formData.extraOptions;
 			}else {
 				modelEngineOptions[Group.selected.uuid] = {
 					is_head: formData.isHead,
 					is_mount: formData.isMount,
 					hand: formData.isHand,
+					duplicate: formData.isDuplicate,
 					extra: formData.extraOptions
 				};
 			}
@@ -265,6 +278,49 @@ function setBoneTypeMenu(){
 
 	return boneTypeDialog;
 }
+var variants;
+
+class VariantSelect extends BarSelect {
+	constructor(id, data) {
+		super(id, data)
+	}
+	addOption(key, name) {
+		this.options[key] = name;
+		this.values.push(key);
+	}
+	removeOption(key) {
+		var index = this.values.indexOf(key);
+		if(index > -1) {
+			delete this.options[key];
+			this.values.splice(index, 1);
+		}
+	}
+}
+
+function generateVariantSelectorAction() {
+    variants = new VariantSelect('meg_variant', {
+        name: 'Model Variant',
+        description: 'Show other variants of this model.',
+		condition: {modes: ['edit', 'paint', 'animate']},
+		value: 'all',
+		options: {
+			all: 'All',
+			default: 'Default'
+		},
+		onChange: function(option) {
+			console.log(option.get())
+		}
+	});
+    Toolbars.main_tools.add(variants, -1);
+}
+
+function addOptions(key, name) {
+	variants.addOption(key, name);
+}
+
+function removeOption(key) {
+	variants.removeOption(key);
+}
 function saySomething() {
 	Blockbench.showToastNotification({
 		text: 'Button test',
@@ -275,7 +331,7 @@ function saySomething() {
 
 (function() {
 
-	var button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Click me!</button></div>`)
+	var button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Error</button></div>`)
 	var modeSelectCallback = (e)=> {
 		if(e.mode.id == 'edit')
 			$('#left_bar').append(button)
@@ -300,6 +356,7 @@ function saySomething() {
 			// Menus
 			generateBoneOption()
 			generateErrorListAction();
+			generateVariantSelectorAction();
 
 			if(Mode.selected.id == 'edit')
 				$('#left_bar').append(button)

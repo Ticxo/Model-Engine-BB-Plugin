@@ -89,7 +89,7 @@ function displayErrorList() {
 					codeViewDialog.hide()
 				}
 			},
-			template: `<div>`+ result +`</div>`
+			template: `<div>${result}</div>`
 		}
 	}).show();
 }
