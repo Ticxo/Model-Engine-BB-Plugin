@@ -1,17 +1,11 @@
-var modelEngineOptions = {};
+var boneOptions = {};
 
-var compileCallback = (e) => {
-	e.model.meg = modelEngineOptions;
-};
+var boneOptionAction;
 
-var parseCallback = (e) => {
-	Object.assign(modelEngineOptions, e.model.meg);
-};
-
-function generateBoneOption() {
-	editAction = new Action('meg_bone_options', {
+function generateBoneAction() {
+	boneOptionAction = new Action('meg_bone_options', {
 		name: 'Bone Options',
-		icon: 'icon-format_java',
+		icon: 'fas.fa-cogs',
 		category: 'edit',
 		//keybind: new Keybind({key: 113}), // Do we want to have a keybind?
 		click: function () {
@@ -19,12 +13,12 @@ function generateBoneOption() {
 		}
 	})
 	Group.prototype.menu.structure.push('_');
-	Group.prototype.menu.addAction(editAction)
+	Group.prototype.menu.addAction(boneOptionAction)
 }
 
 function setBoneTypeMenu(){
 
-	var op = modelEngineOptions[Group.selected.uuid];
+	var op = boneOptions[Group.selected.uuid];
 	function getHead() {
 		if(op)
 			return op.is_head;
@@ -44,6 +38,11 @@ function setBoneTypeMenu(){
 		if(op)
 			return op.duplicate;
 		return '';
+	}
+	function getVariant() {
+		if(op)
+			return op.is_variant;
+		return false;
 	}
 	function getExtra() {
 		if(op)
@@ -81,6 +80,11 @@ function setBoneTypeMenu(){
 				placeholder: 'not duplicate',
 				value: getDuplicate()
 			},
+			isVariant: {
+				label: 'Bone Variant',
+				type: 'checkbox',
+				value: getVariant()
+			},
 			extraOptions: {
 				label: 'Extra',
 				type: 'textarea',
@@ -94,13 +98,15 @@ function setBoneTypeMenu(){
 				op.is_mount = formData.isMount;
 				op.hand = formData.isHand;
 				op.duplicate = formData.isDuplicate;
+				op.is_variant = formData.isVariant;
 				op.extra = formData.extraOptions;
 			}else {
-				modelEngineOptions[Group.selected.uuid] = {
+				boneOptions[Group.selected.uuid] = {
 					is_head: formData.isHead,
 					is_mount: formData.isMount,
 					hand: formData.isHand,
 					duplicate: formData.isDuplicate,
+					is_variant: formData.isVariant,
 					extra: formData.extraOptions
 				};
 			}

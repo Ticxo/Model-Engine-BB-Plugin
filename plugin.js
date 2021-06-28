@@ -1,10 +1,18 @@
-function saySomething() {
-	Blockbench.showToastNotification({
-		text: 'Button test',
-		color: 'Azure',
-		expire: 2000
-	})
-}
+var compileCallback = (e) => {
+	e.model.bone_option = boneOptions;
+	e.model.variant = variantBones;
+};
+
+var parseCallback = (e) => {
+	Object.assign(boneOptions, e.model.bone_option);
+	Object.assign(variantBones, e.model.variant);
+
+	for (const key in variantBones) {
+		if (variantBones.hasOwnProperty(key)) {
+			selectVariant.addOption(key, variantBones[key].name);
+		}
+	}
+};
 
 (function() {
 
@@ -31,18 +39,18 @@ function saySomething() {
 			Codecs.project.on('parse', parseCallback);
 
 			// Menus
-			generateBoneOption()
-			generateErrorListAction();
-			generateVariantSelectorAction();
+			generateBoneAction();
+			generateErrorAction();
+			generateVariantActions();
 
 			if(Mode.selected.id == 'edit')
-				$('#left_bar').append(button)
+				$('#left_bar').append(button);
 
 			Blockbench.showToastNotification({
 				text: 'Model Engine Plugin is loaded!',
 				color: 'Azure',
 				expire: 2000
-			})
+			});
 		},
 
 		onunload() {
@@ -54,7 +62,9 @@ function saySomething() {
 			button.detach();
 
 			Codecs.project.events.compile.remove(compileCallback);
-			editAction.delete();
+			errorListAction.delete();
+			boneOptionAction.delete();
+			selectVariant.delete();
 		}
 	})
 })();

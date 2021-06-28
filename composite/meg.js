@@ -6,10 +6,12 @@ var text_noErrors = 'No errors found!'
 var text_cubeButton = 'See cube'
 var text_boneButton = 'See bone'
 
-function generateErrorListAction() {
-	editAction = new Action('meg_error_list', {
+var errorListAction;
+
+function generateErrorAction() {
+	errorListAction = new Action('meg_error_list', {
 		name: 'Show Error List',
-		icon: 'icon-format_java',
+		icon: 'report',
 		category: 'edit',
 		keybind: new Keybind({key: 'y'}), 
 		click: function () {
@@ -163,20 +165,14 @@ function getBoneByUUID(uuid) {
 	})
 	return result;
 } 
-var modelEngineOptions = {};
+var boneOptions = {};
 
-var compileCallback = (e) => {
-	e.model.meg = modelEngineOptions;
-};
+var boneOptionAction;
 
-var parseCallback = (e) => {
-	Object.assign(modelEngineOptions, e.model.meg);
-};
-
-function generateBoneOption() {
-	editAction = new Action('meg_bone_options', {
+function generateBoneAction() {
+	boneOptionAction = new Action('meg_bone_options', {
 		name: 'Bone Options',
-		icon: 'icon-format_java',
+		icon: 'fas.fa-cogs',
 		category: 'edit',
 		//keybind: new Keybind({key: 113}), // Do we want to have a keybind?
 		click: function () {
@@ -184,12 +180,12 @@ function generateBoneOption() {
 		}
 	})
 	Group.prototype.menu.structure.push('_');
-	Group.prototype.menu.addAction(editAction)
+	Group.prototype.menu.addAction(boneOptionAction)
 }
 
 function setBoneTypeMenu(){
 
-	var op = modelEngineOptions[Group.selected.uuid];
+	var op = boneOptions[Group.selected.uuid];
 	function getHead() {
 		if(op)
 			return op.is_head;
@@ -209,6 +205,11 @@ function setBoneTypeMenu(){
 		if(op)
 			return op.duplicate;
 		return '';
+	}
+	function getVariant() {
+		if(op)
+			return op.is_variant;
+		return false;
 	}
 	function getExtra() {
 		if(op)
@@ -246,6 +247,11 @@ function setBoneTypeMenu(){
 				placeholder: 'not duplicate',
 				value: getDuplicate()
 			},
+			isVariant: {
+				label: 'Bone Variant',
+				type: 'checkbox',
+				value: getVariant()
+			},
 			extraOptions: {
 				label: 'Extra',
 				type: 'textarea',
@@ -259,13 +265,15 @@ function setBoneTypeMenu(){
 				op.is_mount = formData.isMount;
 				op.hand = formData.isHand;
 				op.duplicate = formData.isDuplicate;
+				op.is_variant = formData.isVariant;
 				op.extra = formData.extraOptions;
 			}else {
-				modelEngineOptions[Group.selected.uuid] = {
+				boneOptions[Group.selected.uuid] = {
 					is_head: formData.isHead,
 					is_mount: formData.isMount,
 					hand: formData.isHand,
 					duplicate: formData.isDuplicate,
+					is_variant: formData.isVariant,
 					extra: formData.extraOptions
 				};
 			}
@@ -278,7 +286,13 @@ function setBoneTypeMenu(){
 
 	return boneTypeDialog;
 }
-var variants;
+var selectVariant;
+var createVariant;
+var deleteVariant;
+var viewVariant;
+var setVariant;
+
+var variantBones = {};
 
 class VariantSelect extends BarSelect {
 	constructor(id, data) {
@@ -287,47 +301,187 @@ class VariantSelect extends BarSelect {
 	addOption(key, name) {
 		this.options[key] = name;
 		this.values.push(key);
+		if(key in variantBones)
+			return;
+		variantBones[key] = {
+			name: name,
+			bones: []
+		};
 	}
 	removeOption(key) {
 		var index = this.values.indexOf(key);
 		if(index > -1) {
 			delete this.options[key];
 			this.values.splice(index, 1);
+			delete variantBones[key];
 		}
+	}
+	containsOption(key) {
+		return (key in this.options);
 	}
 }
 
-function generateVariantSelectorAction() {
-    variants = new VariantSelect('meg_variant', {
-        name: 'Model Variant',
-        description: 'Show other variants of this model.',
+function generateVariantActions() {
+
+	selectVariant = new VariantSelect('meg_variant_select', {
+		name: 'Model Variant',
+		description: 'Show other variants of this model.',
 		condition: {modes: ['edit', 'paint', 'animate']},
-		value: 'all',
 		options: {
 			all: 'All',
 			default: 'Default'
 		},
 		onChange: function(option) {
-			console.log(option.get())
+			showVariant(option.get());
 		}
 	});
-    Toolbars.main_tools.add(variants, -1);
+
+	createVariant = new Action('meg_variant_add', {
+		name: 'Create Variant',
+		icon: 'add',
+		category: 'edit',
+		click: function () {
+			showCreateVariantWindow();
+		}
+	});
+
+	deleteVariant = new Action('meg_variant_remove', {
+		name: 'Remove Variant',
+		icon: 'delete',
+		category: 'edit',
+		click: function () {
+			deleteSelectedVariant();
+		}
+	});
+
+	viewVariant = new Action('meg_variant_show', {
+		name: 'View Current Variant',
+		icon: 'visibility',
+		category: 'edit',
+		click: function () {
+			showVariant(selectVariant.get());
+		}
+	});
+
+	setVariant = new Action('meg_variant_set', {
+		name: 'Set View as Variant',
+		icon: 'fas.fa-user-cog',
+		category: 'edit',
+		click: function () {
+			var variantSettings = [];
+			Group.all.forEach(element => {
+				if(element.visibility)
+					variantSettings.push(element.uuid);
+			});
+			variantBones[selectVariant.get()].bones = variantSettings;
+		}
+	});
 }
 
 function addOptions(key, name) {
-	variants.addOption(key, name);
+	selectVariant.addOption(key, name);
 }
 
 function removeOption(key) {
-	variants.removeOption(key);
+	selectVariant.removeOption(key);
 }
-function saySomething() {
+
+function showCreateVariantWindow() {
+	Blockbench.textPrompt(
+		'', 
+		'New Variant', 
+		function(text) {
+			if(selectVariant.containsOption(text.toLowerCase())) {
+				Blockbench.showToastNotification({
+					text: `Variant ${text} already exists.`,
+					color: 'Tomato',
+					expire: 2000
+				});
+			}else {
+				addOptions(text.toLowerCase(), text);
+				selectVariant.set(text.toLowerCase());
+				Blockbench.showToastNotification({
+					text: `Variant created - ${text}.`,
+					color: 'Azure',
+					expire: 2000
+				});
+			}
+		}
+	);
+	$('#text_input div.dialog_handle').text('Create Variant');
+}
+
+function deleteSelectedVariant() {
+	var id = selectVariant.get();
+	if(id === 'all' || id === 'default') {
+		Blockbench.showToastNotification({
+			text: `You can't delete this variant.`,
+			color: 'Tomato',
+			expire: 2000
+		});
+		return;
+	}
 	Blockbench.showToastNotification({
-		text: 'Button test',
+		text: `Variant deleted - ${selectVariant.getNameFor(selectVariant.get())}.`,
 		color: 'Azure',
 		expire: 2000
-	})
+	});
+	removeOption(selectVariant.get());
+	selectVariant.set('default');
 }
+
+function showVariant(variant) {
+
+	if(variant === 'all') {
+		Group.all.forEach(element => {
+			element.visibility = true;
+			element.children.forEach(cube => {
+				cube.visibility = true;
+			});
+		});
+		Canvas.updateVisibility();
+		return;
+	}
+
+	if(variant === 'default') {
+		Group.all.forEach(element => {
+			element.visibility = !(element.uuid in boneOptions) || !boneOptions[element.uuid].is_variant;
+			element.children.forEach(cube => {
+				cube.visibility = element.visibility;
+			});
+		});
+		Canvas.updateVisibility();
+		return;
+	}
+
+	var variantSettings = variantBones[variant].bones;
+	if(!variantSettings)
+		return;
+	Group.all.forEach(element => {
+		element.visibility = variantSettings.includes(element.uuid);
+		element.children.forEach(cube => {
+			if(cube.type === 'group')
+				return;
+			cube.visibility = element.visibility;
+		});
+	});
+	Canvas.updateVisibility();
+}
+var compileCallback = (e) => {
+	e.model.bone_option = boneOptions;
+	e.model.variant = variantBones;
+};
+
+var parseCallback = (e) => {
+	Object.assign(boneOptions, e.model.bone_option);
+	Object.assign(variantBones, e.model.variant);
+
+	for (const key in variantBones) {
+		if (variantBones.hasOwnProperty(key)) {
+			selectVariant.addOption(key, variantBones[key].name);
+		}
+	}
+};
 
 (function() {
 
@@ -354,18 +508,18 @@ function saySomething() {
 			Codecs.project.on('parse', parseCallback);
 
 			// Menus
-			generateBoneOption()
-			generateErrorListAction();
-			generateVariantSelectorAction();
+			generateBoneAction();
+			generateErrorAction();
+			generateVariantActions();
 
 			if(Mode.selected.id == 'edit')
-				$('#left_bar').append(button)
+				$('#left_bar').append(button);
 
 			Blockbench.showToastNotification({
 				text: 'Model Engine Plugin is loaded!',
 				color: 'Azure',
 				expire: 2000
-			})
+			});
 		},
 
 		onunload() {
@@ -377,7 +531,9 @@ function saySomething() {
 			button.detach();
 
 			Codecs.project.events.compile.remove(compileCallback);
-			editAction.delete();
+			errorListAction.delete();
+			boneOptionAction.delete();
+			selectVariant.delete();
 		}
 	})
 })();

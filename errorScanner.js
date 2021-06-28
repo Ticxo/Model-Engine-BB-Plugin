@@ -5,10 +5,12 @@ var text_noErrors = 'No errors found!'
 var text_cubeButton = 'See cube'
 var text_boneButton = 'See bone'
 
-function generateErrorListAction() {
-	editAction = new Action('meg_error_list', {
+var errorListAction;
+
+function generateErrorAction() {
+	errorListAction = new Action('meg_error_list', {
 		name: 'Show Error List',
-		icon: 'icon-format_java',
+		icon: 'report',
 		category: 'edit',
 		keybind: new Keybind({key: 'y'}), 
 		click: function () {
