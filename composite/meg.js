@@ -374,6 +374,11 @@ function generateVariantActions() {
 					variantSettings.push(element.uuid);
 			});
 			variantBones[selectVariant.get()].bones = variantSettings;
+			Blockbench.showToastNotification({
+				text: `Saved current view to ${variantBones[selectVariant.get()].name}.`,
+				color: 'Azure',
+				expire: 2000
+			});
 		}
 	});
 }
@@ -398,7 +403,7 @@ function showCreateVariantWindow() {
 					expire: 2000
 				});
 			}else {
-				addOptions(text.toLowerCase(), text);
+				addOptions(text.toLowerCase().replace(' ', '_'), text);
 				selectVariant.set(text.toLowerCase());
 				Blockbench.showToastNotification({
 					text: `Variant created - ${text}.`,
