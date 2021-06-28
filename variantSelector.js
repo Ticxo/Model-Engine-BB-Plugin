@@ -39,6 +39,7 @@ function generateVariantActions() {
 		name: 'Model Variant',
 		description: 'Show other variants of this model.',
 		condition: {modes: ['edit', 'paint', 'animate']},
+		values: 'default',
 		options: {
 			all: 'All',
 			default: 'Default'
@@ -97,6 +98,7 @@ function generateVariantActions() {
 
 function addOptions(key, name) {
 	selectVariant.addOption(key, name);
+	selectVariant.set(key);
 }
 
 function removeOption(key) {
@@ -108,15 +110,16 @@ function showCreateVariantWindow() {
 		'', 
 		'New Variant', 
 		function(text) {
-			if(selectVariant.containsOption(text.toLowerCase())) {
+			var key = text.toLowerCase().replace(' ', '_');
+			if(selectVariant.containsOption(key)) {
 				Blockbench.showToastNotification({
 					text: `Variant ${text} already exists.`,
 					color: 'Tomato',
 					expire: 2000
 				});
 			}else {
-				addOptions(text.toLowerCase().replace(' ', '_'), text);
-				selectVariant.set(text.toLowerCase());
+				addOptions(key, text);
+				selectVariant.set(key);
 				Blockbench.showToastNotification({
 					text: `Variant created - ${text}.`,
 					color: 'Azure',
@@ -145,6 +148,7 @@ function deleteSelectedVariant() {
 	});
 	removeOption(selectVariant.get());
 	selectVariant.set('default');
+	showVariant('default');
 }
 
 function showVariant(variant) {
