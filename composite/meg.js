@@ -348,7 +348,7 @@ function generateVariantActions() {
 		name: 'Model Variant',
 		description: 'Show other variants of this model.',
 		condition: {modes: ['edit', 'paint', 'animate']},
-		values: 'default',
+		value: 'default',
 		options: {
 			all: 'All',
 			default: 'Default'
@@ -392,8 +392,17 @@ function generateVariantActions() {
 		click: function () {
 			let variantSettings = [];
 			Group.all.forEach(element => {
-				if(!isBoneDefault(element.uuid) && element.visibility)
-					variantSettings.push(element.uuid);
+
+				if(!isBoneDefault(element.uuid)) // Don't loop through variant bones.
+					return;
+				
+				element.children.every(group => {
+					if(group.type === 'group' && !isBoneDefault(group.uuid) && group.visibility) { // Isolate variant bones.
+						variantSettings.push(group.uuid);
+						return false; // Immediately break out of look so it only selects 1 variant bone.
+					}
+					return true;
+				});
 			});
 			variantBones[selectVariant.get()].bones = variantSettings;
 			Blockbench.showToastNotification({
