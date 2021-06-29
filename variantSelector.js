@@ -3,6 +3,7 @@ var createVariant;
 var deleteVariant;
 var viewVariant;
 var setVariant;
+var renameVariant;
 
 var variantBones = {};
 
@@ -28,6 +29,15 @@ class VariantSelect extends BarSelect {
 			delete variantBones[key];
 		}
 	}
+	renameOption(key, newName) {
+		let newKey = newName.toLowerCase().replace(' ', '_');
+		variantBones[newKey] = {
+			name: newName,
+			bones: variantBones[key].bones
+		};
+		removeOption(key);
+		addOptions(newKey, newName);
+	}
 	containsOption(key) {
 		return (key in this.options);
 	}
@@ -51,7 +61,7 @@ function generateVariantActions() {
 
 	createVariant = new Action('meg_variant_add', {
 		name: 'Create Variant',
-		icon: 'add',
+		icon: 'person_add',
 		category: 'edit',
 		click: function () {
 			showCreateVariantWindow();
@@ -78,7 +88,7 @@ function generateVariantActions() {
 
 	setVariant = new Action('meg_variant_set', {
 		name: 'Set View as Variant',
-		icon: 'fas.fa-user-cog',
+		icon: 'save',
 		category: 'edit',
 		click: function () {
 			let variantSettings = [];
@@ -92,6 +102,15 @@ function generateVariantActions() {
 				color: 'Azure',
 				expire: 2000
 			});
+		}
+	});
+
+	renameVariant = new Action('meg_variant_rename', {
+		name: 'Rename Current Variant',
+		icon: 'text_format',
+		category: 'edit',
+		click: function () {
+			showRenameVariantWindow();
 		}
 	});
 }
@@ -211,4 +230,39 @@ function showVariant(variant) {
 
 function isBoneDefault(uuid) {
 	return !(uuid in boneOptions) || boneOptions[uuid].is_variant === 'none';
+}
+
+function showRenameVariantWindow() {
+
+	if(selectVariant.get() === 'all' || selectVariant.get() === 'default') {
+		Blockbench.showToastNotification({
+			text: `You cannot rename this variant.`,
+			color: 'Tomato',
+			expire: 2000
+		});
+		return;
+	}
+
+	Blockbench.textPrompt(
+		'', 
+		'New Name', 
+		function(text) {
+			let key = text.toLowerCase().replace(' ', '_');
+			if(selectVariant.containsOption(key)) {
+				Blockbench.showToastNotification({
+					text: `Variant ${text} already exists.`,
+					color: 'Tomato',
+					expire: 2000
+				});
+			}else {
+				selectVariant.renameOption(selectVariant.get(), text);
+				Blockbench.showToastNotification({
+					text: `Variant Rename - ${text}.`,
+					color: 'Azure',
+					expire: 2000
+				});
+			}
+		}
+	);
+	$('#text_input div.dialog_handle').text('Rename Variant');
 }
