@@ -26,6 +26,9 @@ function displayErrorList() {
 
 	Outliner.elements.forEach(cube => {
 
+		if(typeof cube.parent !== 'string' && cube.parent.name.toLowerCase() === 'hitbox')
+			return;
+
 		let cubeErrors = getCubeErrors(cube)
 		if(cubeErrors.length > 0) {
 			let parentName = typeof cube.parent === 'string' ? cube.parent : cube.parent.name
@@ -43,6 +46,9 @@ function displayErrorList() {
 	})
 
 	Group.all.forEach(bone => {
+		if(bone.name === 'hitbox')
+			return;
+
 		let boneErrors = getBoneErrors(bone)
 		if(boneErrors.length > 0) {
 			let errorList = '';
