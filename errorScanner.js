@@ -22,14 +22,14 @@ function generateErrorAction() {
 
 function displayErrorList() {
 
-	var templateHTML = '';
+	let templateHTML = '';
 
 	Outliner.elements.forEach(cube => {
 
-		var cubeErrors = getCubeErrors(cube)
+		let cubeErrors = getCubeErrors(cube)
 		if(cubeErrors.length > 0) {
-			var parentName = typeof cube.parent === 'string' ? cube.parent : cube.parent.name
-			var errorList = '';
+			let parentName = typeof cube.parent === 'string' ? cube.parent : cube.parent.name
+			let errorList = '';
 			cubeErrors.forEach(error => {
 				errorList += `<li>- ${error}</li>`
 			})
@@ -43,9 +43,9 @@ function displayErrorList() {
 	})
 
 	Group.all.forEach(bone => {
-		var boneErrors = getBoneErrors(bone)
+		let boneErrors = getBoneErrors(bone)
 		if(boneErrors.length > 0) {
-			var errorList = '';
+			let errorList = '';
 			boneErrors.forEach(error => {
 				errorList += `<li>- ${error}</li>`
 			})
@@ -58,7 +58,7 @@ function displayErrorList() {
 		}
 	})
     
-	var result = templateHTML ? templateHTML : '<h3>'+text_noErrors+'</h3>'
+	let result = templateHTML ? templateHTML : '<h3>'+text_noErrors+'</h3>'
 
 	codeViewDialog = new Dialog({
 		title: 'Errors',
@@ -69,7 +69,7 @@ function displayErrorList() {
 		component: {
 			methods: {
 				clickCube(uuid) {
-					var cube = getCubeByUUID(uuid)
+					let cube = getCubeByUUID(uuid)
 					if(cube!=null) {
 						Outliner.selected.forEach(element => {
 							element.unselect()
@@ -80,7 +80,7 @@ function displayErrorList() {
 					codeViewDialog.hide()
 				},
 				clickBone(uuid) {
-					var bone = getBoneByUUID(uuid)
+					let bone = getBoneByUUID(uuid)
 					if(bone!=null) {
 						Outliner.selected.forEach(element => {
 							element.unselect()
@@ -97,13 +97,13 @@ function displayErrorList() {
 }
 
 function getBoneErrors(bone) {
-	var childrens = bone.children
-	var errorList = []
-	var minX, maxX, minY, maxY, minZ, maxZ
+	let childrens = bone.children
+	let errorList = []
+	let minX, maxX, minY, maxY, minZ, maxZ
 
-	for(var cube in childrens) {
+	for(let cube in childrens) {
 		if(childrens.hasOwnProperty(cube)) {
-			var childCube = childrens[cube]
+			let childCube = childrens[cube]
 			if(childCube.type !== 'cube')
 				continue
 
@@ -134,7 +134,7 @@ function getBoneErrors(bone) {
 }
 
 function getCubeErrors(cube) {
-	var errorList = []
+	let errorList = []
 
 	if(!coolRotations.includes(cube.rotation[0])) errorList.push('Illegal X rotation [' + cube.rotation[0] + ']')
 	if(!coolRotations.includes(cube.rotation[1])) errorList.push('Illegal Y rotation [' + cube.rotation[1] + ']')
@@ -146,7 +146,7 @@ function getCubeErrors(cube) {
 }
 
 function getCubeByUUID(uuid) {
-	var result;
+	let result;
 	Outliner.elements.forEach(currentCube => {
 		if(uuid==currentCube.uuid) {
 			result = currentCube;
@@ -156,7 +156,7 @@ function getCubeByUUID(uuid) {
 } 
 
 function getBoneByUUID(uuid) {
-	var result;
+	let result;
 	Outliner.elements.forEach(currentCube => {
 		if(currentCube.parent && uuid==currentCube.parent.uuid) {
 			result = currentCube.parent;

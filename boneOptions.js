@@ -18,7 +18,7 @@ function generateBoneAction() {
 
 function setBoneTypeMenu(){
 
-	var op = boneOptions[Group.selected.uuid];
+	let op = boneOptions[Group.selected.uuid];
 	function getHead() {
 		if(op)
 			return op.is_head;
@@ -42,7 +42,7 @@ function setBoneTypeMenu(){
 	function getVariant() {
 		if(op)
 			return op.is_variant;
-		return false;
+		return 'none';
 	}
 	function getExtra() {
 		if(op)
@@ -50,7 +50,7 @@ function setBoneTypeMenu(){
 		return '';
 	}
 
-	var boneTypeDialog = new Dialog({
+	let boneTypeDialog = new Dialog({
 		id: 'bone_option_dialog',
 		title: 'Bone Options',
 		form: {
@@ -82,7 +82,12 @@ function setBoneTypeMenu(){
 			},
 			isVariant: {
 				label: 'Bone Variant',
-				type: 'checkbox',
+				type: 'select',
+				options: {
+					none: 'Default',
+					texture: 'Texture',
+					model: 'Model'
+				},
 				value: getVariant()
 			},
 			extraOptions: {

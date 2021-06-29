@@ -16,8 +16,8 @@ var parseCallback = (e) => {
 
 (function() {
 
-	var button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Error</button></div>`)
-	var modeSelectCallback = (e)=> {
+	let button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Error</button></div>`)
+	let modeSelectCallback = (e)=> {
 		if(e.mode.id == 'edit')
 			$('#left_bar').append(button)
 		else

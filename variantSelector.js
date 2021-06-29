@@ -21,7 +21,7 @@ class VariantSelect extends BarSelect {
 		};
 	}
 	removeOption(key) {
-		var index = this.values.indexOf(key);
+		let index = this.values.indexOf(key);
 		if(index > -1) {
 			delete this.options[key];
 			this.values.splice(index, 1);
@@ -81,9 +81,9 @@ function generateVariantActions() {
 		icon: 'fas.fa-user-cog',
 		category: 'edit',
 		click: function () {
-			var variantSettings = [];
+			let variantSettings = [];
 			Group.all.forEach(element => {
-				if(element.visibility)
+				if(!isBoneDefault(element.uuid) && element.visibility)
 					variantSettings.push(element.uuid);
 			});
 			variantBones[selectVariant.get()].bones = variantSettings;
@@ -110,7 +110,7 @@ function showCreateVariantWindow() {
 		'', 
 		'New Variant', 
 		function(text) {
-			var key = text.toLowerCase().replace(' ', '_');
+			let key = text.toLowerCase().replace(' ', '_');
 			if(selectVariant.containsOption(key)) {
 				Blockbench.showToastNotification({
 					text: `Variant ${text} already exists.`,
@@ -132,7 +132,7 @@ function showCreateVariantWindow() {
 }
 
 function deleteSelectedVariant() {
-	var id = selectVariant.get();
+	let id = selectVariant.get();
 	if(id === 'all' || id === 'default') {
 		Blockbench.showToastNotification({
 			text: `You can't delete this variant.`,
@@ -166,7 +166,7 @@ function showVariant(variant) {
 
 	if(variant === 'default') {
 		Group.all.forEach(element => {
-			element.visibility = !(element.uuid in boneOptions) || !boneOptions[element.uuid].is_variant;
+			element.visibility = !(element.uuid in boneOptions) || boneOptions[element.uuid].is_variant === 'none';
 			element.children.forEach(cube => {
 				cube.visibility = element.visibility;
 			});
@@ -175,16 +175,40 @@ function showVariant(variant) {
 		return;
 	}
 
-	var variantSettings = variantBones[variant].bones;
+	let variantSettings = variantBones[variant].bones;
 	if(!variantSettings)
 		return;
 	Group.all.forEach(element => {
-		element.visibility = variantSettings.includes(element.uuid);
-		element.children.forEach(cube => {
-			if(cube.type === 'group')
+
+		if(!isBoneDefault(element.uuid)) // Skipping all bones that are variant bones.
+			return;
+
+		let variantVis;
+		element.children.forEach(group => {
+			if(group.type !== 'group' || isBoneDefault(group.uuid)) // Isolating children that are variant bones.
 				return;
-			cube.visibility = element.visibility;
+			let vis = variantSettings.includes(group.uuid);
+			group.visibility = vis;
+			group.children.forEach(cube => {
+				if(cube.type === 'group') // Groups within variant bones are not allowed. Skipping.
+					return;
+				cube.visibility = vis;
+			});
+			
+			variantVis |= vis; // variant bone exists trigger.
 		});
+
+		element.visibility = !variantVis; // If a variant bone is present, hiding default bone.
+		element.children.forEach(cube => {
+			if(cube.type === 'group') // Isolating children cubes that are directly under this bone.
+				return;
+			cube.visibility = !variantVis;
+		});
+
 	});
 	Canvas.updateVisibility();
+}
+
+function isBoneDefault(uuid) {
+	return !(uuid in boneOptions) || boneOptions[uuid].is_variant === 'none';
 }

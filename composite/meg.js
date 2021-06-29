@@ -23,14 +23,14 @@ function generateErrorAction() {
 
 function displayErrorList() {
 
-	var templateHTML = '';
+	let templateHTML = '';
 
 	Outliner.elements.forEach(cube => {
 
-		var cubeErrors = getCubeErrors(cube)
+		let cubeErrors = getCubeErrors(cube)
 		if(cubeErrors.length > 0) {
-			var parentName = typeof cube.parent === 'string' ? cube.parent : cube.parent.name
-			var errorList = '';
+			let parentName = typeof cube.parent === 'string' ? cube.parent : cube.parent.name
+			let errorList = '';
 			cubeErrors.forEach(error => {
 				errorList += `<li>- ${error}</li>`
 			})
@@ -44,9 +44,9 @@ function displayErrorList() {
 	})
 
 	Group.all.forEach(bone => {
-		var boneErrors = getBoneErrors(bone)
+		let boneErrors = getBoneErrors(bone)
 		if(boneErrors.length > 0) {
-			var errorList = '';
+			let errorList = '';
 			boneErrors.forEach(error => {
 				errorList += `<li>- ${error}</li>`
 			})
@@ -59,7 +59,7 @@ function displayErrorList() {
 		}
 	})
     
-	var result = templateHTML ? templateHTML : '<h3>'+text_noErrors+'</h3>'
+	let result = templateHTML ? templateHTML : '<h3>'+text_noErrors+'</h3>'
 
 	codeViewDialog = new Dialog({
 		title: 'Errors',
@@ -70,7 +70,7 @@ function displayErrorList() {
 		component: {
 			methods: {
 				clickCube(uuid) {
-					var cube = getCubeByUUID(uuid)
+					let cube = getCubeByUUID(uuid)
 					if(cube!=null) {
 						Outliner.selected.forEach(element => {
 							element.unselect()
@@ -81,7 +81,7 @@ function displayErrorList() {
 					codeViewDialog.hide()
 				},
 				clickBone(uuid) {
-					var bone = getBoneByUUID(uuid)
+					let bone = getBoneByUUID(uuid)
 					if(bone!=null) {
 						Outliner.selected.forEach(element => {
 							element.unselect()
@@ -98,13 +98,13 @@ function displayErrorList() {
 }
 
 function getBoneErrors(bone) {
-	var childrens = bone.children
-	var errorList = []
-	var minX, maxX, minY, maxY, minZ, maxZ
+	let childrens = bone.children
+	let errorList = []
+	let minX, maxX, minY, maxY, minZ, maxZ
 
-	for(var cube in childrens) {
+	for(let cube in childrens) {
 		if(childrens.hasOwnProperty(cube)) {
-			var childCube = childrens[cube]
+			let childCube = childrens[cube]
 			if(childCube.type !== 'cube')
 				continue
 
@@ -135,7 +135,7 @@ function getBoneErrors(bone) {
 }
 
 function getCubeErrors(cube) {
-	var errorList = []
+	let errorList = []
 
 	if(!coolRotations.includes(cube.rotation[0])) errorList.push('Illegal X rotation [' + cube.rotation[0] + ']')
 	if(!coolRotations.includes(cube.rotation[1])) errorList.push('Illegal Y rotation [' + cube.rotation[1] + ']')
@@ -147,7 +147,7 @@ function getCubeErrors(cube) {
 }
 
 function getCubeByUUID(uuid) {
-	var result;
+	let result;
 	Outliner.elements.forEach(currentCube => {
 		if(uuid==currentCube.uuid) {
 			result = currentCube;
@@ -157,7 +157,7 @@ function getCubeByUUID(uuid) {
 } 
 
 function getBoneByUUID(uuid) {
-	var result;
+	let result;
 	Outliner.elements.forEach(currentCube => {
 		if(currentCube.parent && uuid==currentCube.parent.uuid) {
 			result = currentCube.parent;
@@ -185,7 +185,7 @@ function generateBoneAction() {
 
 function setBoneTypeMenu(){
 
-	var op = boneOptions[Group.selected.uuid];
+	let op = boneOptions[Group.selected.uuid];
 	function getHead() {
 		if(op)
 			return op.is_head;
@@ -209,7 +209,7 @@ function setBoneTypeMenu(){
 	function getVariant() {
 		if(op)
 			return op.is_variant;
-		return false;
+		return 'none';
 	}
 	function getExtra() {
 		if(op)
@@ -217,7 +217,7 @@ function setBoneTypeMenu(){
 		return '';
 	}
 
-	var boneTypeDialog = new Dialog({
+	let boneTypeDialog = new Dialog({
 		id: 'bone_option_dialog',
 		title: 'Bone Options',
 		form: {
@@ -249,7 +249,12 @@ function setBoneTypeMenu(){
 			},
 			isVariant: {
 				label: 'Bone Variant',
-				type: 'checkbox',
+				type: 'select',
+				options: {
+					none: 'Default',
+					texture: 'Texture',
+					model: 'Model'
+				},
 				value: getVariant()
 			},
 			extraOptions: {
@@ -309,7 +314,7 @@ class VariantSelect extends BarSelect {
 		};
 	}
 	removeOption(key) {
-		var index = this.values.indexOf(key);
+		let index = this.values.indexOf(key);
 		if(index > -1) {
 			delete this.options[key];
 			this.values.splice(index, 1);
@@ -369,9 +374,9 @@ function generateVariantActions() {
 		icon: 'fas.fa-user-cog',
 		category: 'edit',
 		click: function () {
-			var variantSettings = [];
+			let variantSettings = [];
 			Group.all.forEach(element => {
-				if(element.visibility)
+				if(!isBoneDefault(element.uuid) && element.visibility)
 					variantSettings.push(element.uuid);
 			});
 			variantBones[selectVariant.get()].bones = variantSettings;
@@ -398,7 +403,7 @@ function showCreateVariantWindow() {
 		'', 
 		'New Variant', 
 		function(text) {
-			var key = text.toLowerCase().replace(' ', '_');
+			let key = text.toLowerCase().replace(' ', '_');
 			if(selectVariant.containsOption(key)) {
 				Blockbench.showToastNotification({
 					text: `Variant ${text} already exists.`,
@@ -420,7 +425,7 @@ function showCreateVariantWindow() {
 }
 
 function deleteSelectedVariant() {
-	var id = selectVariant.get();
+	let id = selectVariant.get();
 	if(id === 'all' || id === 'default') {
 		Blockbench.showToastNotification({
 			text: `You can't delete this variant.`,
@@ -454,7 +459,7 @@ function showVariant(variant) {
 
 	if(variant === 'default') {
 		Group.all.forEach(element => {
-			element.visibility = !(element.uuid in boneOptions) || !boneOptions[element.uuid].is_variant;
+			element.visibility = !(element.uuid in boneOptions) || boneOptions[element.uuid].is_variant === 'none';
 			element.children.forEach(cube => {
 				cube.visibility = element.visibility;
 			});
@@ -463,18 +468,42 @@ function showVariant(variant) {
 		return;
 	}
 
-	var variantSettings = variantBones[variant].bones;
+	let variantSettings = variantBones[variant].bones;
 	if(!variantSettings)
 		return;
 	Group.all.forEach(element => {
-		element.visibility = variantSettings.includes(element.uuid);
-		element.children.forEach(cube => {
-			if(cube.type === 'group')
+
+		if(!isBoneDefault(element.uuid)) // Skipping all bones that are variant bones.
+			return;
+
+		let variantVis;
+		element.children.forEach(group => {
+			if(group.type !== 'group' || isBoneDefault(group.uuid)) // Isolating children that are variant bones.
 				return;
-			cube.visibility = element.visibility;
+			let vis = variantSettings.includes(group.uuid);
+			group.visibility = vis;
+			group.children.forEach(cube => {
+				if(cube.type === 'group') // Groups within variant bones are not allowed. Skipping.
+					return;
+				cube.visibility = vis;
+			});
+			
+			variantVis |= vis; // variant bone exists trigger.
 		});
+
+		element.visibility = !variantVis; // If a variant bone is present, hiding default bone.
+		element.children.forEach(cube => {
+			if(cube.type === 'group') // Isolating children cubes that are directly under this bone.
+				return;
+			cube.visibility = !variantVis;
+		});
+
 	});
 	Canvas.updateVisibility();
+}
+
+function isBoneDefault(uuid) {
+	return !(uuid in boneOptions) || boneOptions[uuid].is_variant === 'none';
 }
 var compileCallback = (e) => {
 	e.model.bone_option = boneOptions;
@@ -494,8 +523,8 @@ var parseCallback = (e) => {
 
 (function() {
 
-	var button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Error</button></div>`)
-	var modeSelectCallback = (e)=> {
+	let button = $(`<div><button onclick="displayErrorList()" style="width: 100%">Error</button></div>`)
+	let modeSelectCallback = (e)=> {
 		if(e.mode.id == 'edit')
 			$('#left_bar').append(button)
 		else
