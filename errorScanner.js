@@ -4,6 +4,11 @@ var coolRotations = [-45, -22.5, 0, 22.5, 45]
 var text_noErrors = 'No errors found!'
 var text_cubeButton = 'See cube'
 var text_boneButton = 'See bone'
+var text_quickFix = 'Quick fix [_]'
+
+const diff = (a, b) => {
+    return Math.abs(a - b);
+}
 
 var errorListAction;
 
@@ -33,15 +38,32 @@ function displayErrorList() {
 		if(cubeErrors.length > 0) {
 			let parentName = typeof cube.parent === 'string' ? cube.parent : cube.parent.name
 			let errorList = '';
+			var entryButton = `<button @click="fixCube('${cube.uuid}', 'orientation', 'newVal')"style="height:10%;width=10%">${text_quickFix}</button>`;
 			cubeErrors.forEach(error => {
-				errorList += `<li>- ${error}</li>`
+				var button = '';
+				var errorNumber = error.substring(error.indexOf('[') + 1, error.lastIndexOf(']'));
+				if(error.includes('rotation')) {
+				  var targetNumber = 0;
+				  coolRotations.forEach(rotation => {
+				    if(diff(errorNumber, rotation)<2.5 && diff(errorNumber, rotation)>0) {
+					  targetNumber = rotation
+					  let orientation = error.split(' ')[1]
+					  button = entryButton;
+				      button = button.replace('_', targetNumber).replace('orientation', orientation).replace('newVal', targetNumber);
+					}
+				  })
+				}
+				if(!coolRotations.includes(parseFloat(errorNumber))) // Don't ask me why this needs to be checked *here*, JS & BB weird
+				  errorList += `<li>- ${error} ${button} </li>`
 			})
-			templateHTML += `
-				<span style="font-size:18px"><span style="color:DodgerBlue">${parentName}</span>.<span style="color:Tomato">${cube.name}</span>:</span>
-				<button @click="clickCube('${cube.uuid}')" style="width: 10%; float: right;">${text_cubeButton}</button>
-				<ul>${errorList}</ul>
-				<hr>
-			`
+			if(errorList.length!=0) {
+				templateHTML += `
+					<span style="font-size:18px"><span style="color:DodgerBlue">${parentName}</span>.<span style="color:Tomato">${cube.name}</span>:</span>
+					<button @click="clickCube('${cube.uuid}')" style="float: right">${text_cubeButton}</button>
+					<ul>${errorList}</ul>
+					<hr>
+				`
+			}
 		}
 	})
 
@@ -74,6 +96,20 @@ function displayErrorList() {
 		singleButton: true,
 		component: {
 			methods: {
+				fixCube(uuid, orientation, fix) {
+					console.log("Called with "+orientation+" "+fix)
+					let cube = getCubeByUUID(uuid)
+					console.log(cube)
+					if(cube!=null) {
+						if(orientation==='X')
+							cube.rotation[0] = fix;
+						else if(orientation==='Y')
+							cube.rotation[1] = fix;
+						else
+						    cube.rotation[2] = fix;
+						
+					}
+				},
 				clickCube(uuid) {
 					let cube = getCubeByUUID(uuid)
 					if(cube!=null) {
@@ -87,7 +123,7 @@ function displayErrorList() {
 				},
 				clickBone(uuid) {
 					let bone = getBoneByUUID(uuid)
-					if(bone!=null) {
+					if(bone!=null) { 
 						Outliner.selected.forEach(element => {
 							element.unselect()
 						})
