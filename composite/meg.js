@@ -7,7 +7,9 @@ var text_cubeButton = 'See cube'
 var text_boneButton = 'See bone'
 var text_quickFix = 'Quick fix [_]'
 
-const diff = (a, b) => {
+var codeViewDialog;
+
+const mathDiff = (a, b) => {
     return Math.abs(a - b);
 }
 
@@ -25,10 +27,10 @@ function generateErrorAction() {
 	})
 }
 
-
 function displayErrorList() {
 
 	let templateHTML = '';
+	let quickFixableErrors = false;
 
 	Outliner.elements.forEach(cube => {
 
@@ -46,7 +48,9 @@ function displayErrorList() {
 				if(error.includes('rotation')) {
 				  var targetNumber = 0;
 				  coolRotations.forEach(rotation => {
-				    if(diff(errorNumber, rotation)<2.5 && diff(errorNumber, rotation)>0) {
+				    if(mathDiff(errorNumber, rotation)<2.5 && mathDiff(errorNumber, rotation)>0) {
+					  quickFixableErrors = true;
+
 					  targetNumber = rotation
 					  let orientation = error.split(' ')[1]
 					  button = entryButton;
@@ -89,6 +93,19 @@ function displayErrorList() {
     
 	let result = templateHTML ? templateHTML : '<h3>'+text_noErrors+'</h3>'
 
+	function quickFixCube(uuid, orientation, fix) {
+		let cube = getCubeByUUID(uuid)
+		if(cube!=null) {
+			if(orientation==='X')
+				cube.rotation[0] = fix;
+			else if(orientation==='Y')
+				cube.rotation[1] = fix;
+			else
+				cube.rotation[2] = fix;
+			Blockbench.showQuickMessage("Fixed cube by ID "+uuid, 4000);	
+		}
+	}
+
 	codeViewDialog = new Dialog({
 		title: 'Errors',
 		id: 'errors_menu',
@@ -97,19 +114,9 @@ function displayErrorList() {
 		singleButton: true,
 		component: {
 			methods: {
+
 				fixCube(uuid, orientation, fix) {
-					console.log("Called with "+orientation+" "+fix)
-					let cube = getCubeByUUID(uuid)
-					console.log(cube)
-					if(cube!=null) {
-						if(orientation==='X')
-							cube.rotation[0] = fix;
-						else if(orientation==='Y')
-							cube.rotation[1] = fix;
-						else
-						    cube.rotation[2] = fix;
-						
-					}
+					quickFixCube(uuid, orientation, fix);
 				},
 				clickCube(uuid) {
 					let cube = getCubeByUUID(uuid)
@@ -137,6 +144,33 @@ function displayErrorList() {
 			template: `<div>${result}</div>`
 		}
 	}).show();
+
+	if(quickFixableErrors) {
+		button = $('<button class="confirm_btn cancel_btn" style="margin:5px;">Quick fix all errors</button>');
+
+		button.click(function () {
+			Outliner.elements.forEach(cube => {
+				let cubeErrors = getCubeErrors(cube)
+				if(cubeErrors.length > 0) {
+					cubeErrors.forEach(error => {
+						var errorNumber = error.substring(error.indexOf('[') + 1, error.lastIndexOf(']'));
+						if(error.includes('rotation')) {
+						  var targetNumber = 0;
+						  coolRotations.forEach(rotation => {
+							if(mathDiff(errorNumber, rotation)<2.5 && mathDiff(errorNumber, rotation)>0) {
+							  targetNumber = rotation
+							  let orientation = error.split(' ')[1]
+							  quickFixCube(cube.uuid, orientation, targetNumber);
+							}
+						  })
+						}
+					})
+				}
+			}
+		)})
+	
+		$('div.dialog_bar.button_bar').prepend(button);
+	}
 }
 
 function getBoneErrors(bone) {
