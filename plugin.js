@@ -28,7 +28,7 @@ var parseCallback = (e) => {
 	Plugin.register('meg', {
 		title: 'ModelEngine',
 		author: 'Pande, Ticxo',
-		icon: 'icon',
+		icon: 'settings_applications',
 		description: 'A ModelEngine addon for Blockbench',
 		version: '0.1.0',
 		variant: 'both',
