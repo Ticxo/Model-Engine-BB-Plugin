@@ -3,6 +3,7 @@ import { getErrorListAction, displayErrorList, generateErrorAction } from './err
 import { getSelectVariant, generateVariantActions } from './variantSelector';
 import './globalVariables';
 import { isMegFormat, loadFormat, unloadFormat } from './modelFormat';
+import { getSettingsAction, generateSettingsAction } from './settings';
 
 (function() {
 
@@ -41,6 +42,7 @@ import { isMegFormat, loadFormat, unloadFormat } from './modelFormat';
 			generateBoneAction();
 			generateErrorAction();
 			generateVariantActions();
+			generateSettingsAction();
 			
 			window.displayErrorList = displayErrorList;
 
@@ -61,13 +63,14 @@ import { isMegFormat, loadFormat, unloadFormat } from './modelFormat';
 		onuninstall() {
 			button.detach();
 
-			Blockbench.removeEventListener('select_mode', onSelectMode);
-			Blockbench.removeEventListener('load_project', onLoadProject);
+			Blockbench.removeListener('select_mode', onSelectMode);
+			Blockbench.removeListener('load_project', onLoadProject);
 			unloadFormat();
 
 			getErrorListAction().delete();
 			getBoneOptionAction().delete();
 			getSelectVariant().delete();
+			getSettingsAction().delete();
 
 			delete window.displayErrorList;
 		}
