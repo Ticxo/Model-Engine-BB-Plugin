@@ -1,4 +1,5 @@
 import { boneOptions } from './boneOptions';
+import { textureOptions } from './textureOptions';
 import { variantBones, selectVariant } from './variantSelector';
 
 export const MODEL_ENGINE_FORMAT_ID = "model_engine";
@@ -22,6 +23,7 @@ function compileCallback(e) {
 	const megData = {
 		format_version: MODEL_ENGINE_FORMAT_VERSION,
 		bone_option: boneOptions,
+		texture_option: textureOptions,
 		variant: variantBones,	
 	};
 	e.model.model_engine = megData;
@@ -36,6 +38,7 @@ function parseCallback(e) {
 		throw new Error(`No loader exists for model format version ${megData.format_version}, expected ${MODEL_ENGINE_FORMAT_VERSION}`);
 	}
 	Object.assign(boneOptions, e.model.model_engine.bone_option);
+	Object.assign(textureOptions, e.model.model_engine.texture_option);
 	Object.assign(variantBones, e.model.model_engine.variant);
 
 	for (const key in variantBones) {

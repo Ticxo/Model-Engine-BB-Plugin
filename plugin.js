@@ -1,9 +1,10 @@
+import './globalVariables';
 import { getBoneOptionAction, generateBoneAction } from './boneOptions';
 import { getErrorListAction, displayErrorList, generateErrorAction } from './errorScanner';
 import { getSelectVariant, generateVariantActions } from './variantSelector';
-import './globalVariables';
 import { isMegFormat, loadFormat, unloadFormat } from './modelFormat';
 import { getSettingsAction, generateSettingsAction } from './settings';
+import { deleteEditTextureAction, generateEditTextureAction } from './textureOptions';
 
 (function() {
 
@@ -43,6 +44,7 @@ import { getSettingsAction, generateSettingsAction } from './settings';
 			generateErrorAction();
 			generateVariantActions();
 			generateSettingsAction();
+			generateEditTextureAction();
 			
 			window.displayErrorList = displayErrorList;
 
@@ -71,6 +73,7 @@ import { getSettingsAction, generateSettingsAction } from './settings';
 			getBoneOptionAction().delete();
 			getSelectVariant().delete();
 			getSettingsAction().delete();
+			deleteEditTextureAction();
 
 			delete window.displayErrorList;
 		}
