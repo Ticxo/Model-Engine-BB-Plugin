@@ -1,3 +1,5 @@
+import { isMegFormat } from './modelFormat';
+
 export var boneOptions = {};
 
 export var boneOptionAction;
@@ -9,6 +11,7 @@ export function generateBoneAction() {
 		icon: 'fas.fa-cogs',
 		category: 'edit',
 		//keybind: new Keybind({key: 113}), // Do we want to have a keybind?
+		condition: isMegFormat,
 		click: function () {
 			setBoneTypeMenu().show();
 		}
