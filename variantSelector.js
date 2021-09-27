@@ -4,8 +4,9 @@ var deleteVariant;
 var viewVariant;
 var setVariant;
 var renameVariant;
+export const getSelectVariant = () => selectVariant;
 
-var variantBones = {};
+export var variantBones = {};
 
 class VariantSelect extends BarSelect {
 	constructor(id, data) {
@@ -43,7 +44,7 @@ class VariantSelect extends BarSelect {
 	}
 }
 
-function generateVariantActions() {
+export function generateVariantActions() {
 
 	selectVariant = new VariantSelect('meg_variant_select', {
 		name: 'Model Variant',

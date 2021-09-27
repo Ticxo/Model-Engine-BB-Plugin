@@ -1,8 +1,9 @@
-var boneOptions = {};
+export var boneOptions = {};
 
-var boneOptionAction;
+export var boneOptionAction;
+export const getBoneOptionAction = () => boneOptionAction;
 
-function generateBoneAction() {
+export function generateBoneAction() {
 	boneOptionAction = new Action('meg_bone_options', {
 		name: 'Bone Options',
 		icon: 'fas.fa-cogs',

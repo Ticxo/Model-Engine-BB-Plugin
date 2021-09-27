@@ -1,3 +1,8 @@
+import { boneOptions, getBoneOptionAction, generateBoneAction } from './boneOptions';
+import { getErrorListAction, displayErrorList, generateErrorAction } from './errorScanner';
+import { variantBones, getSelectVariant, generateVariantActions } from './variantSelector';
+import './globalVariables';
+
 var compileCallback = (e) => {
 	e.model.bone_option = boneOptions;
 	e.model.variant = variantBones;
@@ -42,6 +47,8 @@ var parseCallback = (e) => {
 			generateBoneAction();
 			generateErrorAction();
 			generateVariantActions();
+			
+			window.displayErrorList = displayErrorList;
 
 			if(Mode.selected.id == 'edit')
 				$('#left_bar').append(button);
@@ -62,9 +69,11 @@ var parseCallback = (e) => {
 			button.detach();
 
 			Codecs.project.events.compile.remove(compileCallback);
-			errorListAction.delete();
-			boneOptionAction.delete();
-			selectVariant.delete();
+			getErrorListAction().delete();
+			getBoneOptionAction().delete();
+			getSelectVariant().delete();
+
+			delete window.displayErrorList;
 		}
 	})
 })();

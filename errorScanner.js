@@ -13,20 +13,19 @@ const mathDiff = (a, b) => {
 }
 
 var errorListAction;
+export const getErrorListAction = () => errorListAction;
 
-function generateErrorAction() {
+export function generateErrorAction() {
 	errorListAction = new Action('meg_error_list', {
 		name: 'Show Error List',
 		icon: 'report',
 		category: 'edit',
 		keybind: new Keybind({key: 'y'}), 
-		click: function () {
-			displayErrorList();
-		}
+		click: displayErrorList
 	})
 }
 
-function displayErrorList() {
+export function displayErrorList() {
 
 	let templateHTML = '';
 	let quickFixableErrors = false;
@@ -175,7 +174,7 @@ function displayErrorList() {
 function getBoneErrors(bone) {
 	let childrens = bone.children
 	let errorList = []
-	let minX, maxX, minY, maxY, minZ, maxZ
+	let x, y, z, minX, maxX, minY, maxY, minZ, maxZ
 
 	for(let cube in childrens) {
 		if(childrens.hasOwnProperty(cube)) {
@@ -211,6 +210,7 @@ function getBoneErrors(bone) {
 
 function getCubeErrors(cube) {
 	let errorList = []
+	let x, y, z
 
 	if(!coolRotations.includes(cube.rotation[0])) errorList.push('Illegal X rotation [' + cube.rotation[0] + ']')
 	if(!coolRotations.includes(cube.rotation[1])) errorList.push('Illegal Y rotation [' + cube.rotation[1] + ']')
