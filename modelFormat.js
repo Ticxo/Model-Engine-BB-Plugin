@@ -1,6 +1,6 @@
 import { boneOptions } from './boneOptions';
 import { textureOptions } from './textureOptions';
-import { variantBones, selectVariant } from './variantSelector';
+import { variantBones, getSelectVariant } from './variantSelector';
 
 export const MODEL_ENGINE_FORMAT_ID = "model_engine";
 export const MODEL_ENGINE_FORMAT_VERSION = 2;
@@ -43,7 +43,7 @@ function parseCallback(e) {
 
 	for (const key in variantBones) {
 		if (variantBones.hasOwnProperty(key)) {
-			selectVariant.addOption(key, variantBones[key].name);
+			getSelectVariant().addOption(key, variantBones[key].name);
 		}
 	}
 }
