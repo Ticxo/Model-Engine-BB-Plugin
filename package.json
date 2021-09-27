@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "description": "A ModelEngine addon for Blockbench",
   "main": "plugin.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ticxo/Model-Engine-BB-Plugin.git"
@@ -15,5 +12,13 @@
   "bugs": {
     "url": "https://github.com/Ticxo/Model-Engine-BB-Plugin/issues"
   },
-  "homepage": "https://github.com/Ticxo/Model-Engine-BB-Plugin#readme"
+  "homepage": "https://github.com/Ticxo/Model-Engine-BB-Plugin#readme",
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "devDependencies": {
+    "webpack": "4.43.0",
+    "webpack-cli": "3.3.12"
+  }
 }
